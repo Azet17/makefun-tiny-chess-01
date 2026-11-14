@@ -1,11 +1,7 @@
-# tiny-chess engine: 0x88 board, alpha-beta + transposition table + killer
-# moves + quiescence, material + piece-square evaluation, fixed node budget
-# (deterministic: no clock, no unseeded randomness). Talks to the env only.
-import json, os, sys, urllib.request, urllib.error
-
+import json, os, sys, urllib.request as U
 E = os.environ.get("MAKEFUN_ENV_URL") or sys.exit("no env")
 MATE = 100000
-LIMIT = 30000          # nodes per move; tune after benchmarking
+LIMIT = 60000          # nodes per move; ~2s at ~30k nps
 MAXD = 12
 
 # piece codes: 0 empty, 1-6 white P N B R Q K, 7-12 black p n b r q k
@@ -488,12 +484,12 @@ def mou(m):
     return s
 
 def post(path, body):
-    req = urllib.request.Request(E + path, data=json.dumps(body).encode(), headers={"content-type": "application/json"})
+    req = U.Request(E + path, data=json.dumps(body).encode(), headers={"content-type": "application/json"})
     try:
-        with urllib.request.urlopen(req) as r:
+        with U.urlopen(req) as r:
             return json.load(r)
-    except urllib.error.HTTPError as e:
-        sys.exit(f"{path}: HTTP {e.code} {e.read().decode(errors='replace')}")
+    except Exception as e:
+        sys.exit(f"{path}: {e}")
 
 START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
